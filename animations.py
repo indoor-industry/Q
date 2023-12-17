@@ -1,6 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from celluloid import Camera
+from scipy import integrate
+import time
+
+time_start = time.perf_counter()
 
 #mass of the object
 m=1
@@ -13,24 +17,13 @@ E=1/(2*m*a**2)
 x = np.linspace(-10, 10, 100)
 
 #ground state
-def GS(x, a):
+def GS(x):
     return (1/(2*np.pi*a**2))**(1/4)*np.exp(-(x**2/(4*a**2)))
 
-ground_state = [GS(i, a) for i in x]
-
-#plot ground state
-#fig1, axs1 = plt.subplots(3)
-#fig1.suptitle('Ground state')
-#realGS = np.real(ground_state)
-#imagGS = np.imag(ground_state)
-#modGS = (np.abs(ground_state))**2
-#axs1[0].plot(x, realGS, color='black')
-#axs1[1].plot(x, imagGS, color='black')
-#axs1[2].plot(x, modGS, color='black')
-#plt.show()
+ground_state = [GS(i) for i in x]
 
 #evolved state
-def ES(x, a, t):
+def ES(x, t):
     sigma_squared = a**2*(1+(E*t)**2)
     return (2*np.pi*sigma_squared)**(-1/4)*np.exp(-((x**2*(1-1j*E*t))/(4*sigma_squared)))
 
@@ -43,7 +36,7 @@ fig2.suptitle('Evolving ground state')
 camera = Camera(fig2)
 for t in time1:
     #values of evolved state
-    y = [ES(i, a, t) for i in x]
+    y = [ES(i, t) for i in x]
     #real, imaginary and absolute value parts
     realES = np.real(y)
     imagES = np.imag(y)
@@ -62,9 +55,9 @@ animation.save('localized_evolution.gif', writer = 'imagemagick')
 #Apply measurment, delocalized state, not normalized
 sigma_squared = a**2*(1+(E*t_flight1)**2)
 sigmad_squared = sigma_squared/10
-phi = -2 
+phi = -2
 d=10
-def DS(x, a, t):
+def DS(x, t):
     D = sigma_squared+sigmad_squared-1j*sigmad_squared*(E*t_flight1+phi)
     L = np.exp(-(((d*sigma_squared)/(2*D)-x)**2)/(4*((sigma_squared*sigmad_squared)/D+1j*E*a**2*t)))
     R = np.exp(-(((-d*sigma_squared)/(2*D)-x)**2)/(4*((sigma_squared*sigmad_squared)/D+1j*E*a**2*t)))
@@ -77,13 +70,20 @@ time2 = np.linspace(0, t_flight2, 50)
 fig3, axs3 = plt.subplots(3)
 fig3.suptitle('Evolving delocalized state')
 camera2 = Camera(fig3)
-for t in time2:
+for t in time2:    
+    #numerical normalization for each timeslice
+    def DS_t_mod_squared(x):
+        return np.abs(DS(x, t=t))**2
+
+    normalization_squared, res = integrate.quad(DS_t_mod_squared, -np.inf, np.inf)
+    normalization = np.sqrt(normalization_squared)
+
     #values of evolved state
-    y = [DS(i, a, t) for i in x]
+    y = [DS(i, t) for i in x]
     #real, imaginary and absolute value parts
-    realDS = np.real(y)
-    imagDS = np.imag(y)
-    modDS = np.abs(y)
+    realDS = np.real(y)/normalization
+    imagDS = np.imag(y)/normalization
+    modDS = np.abs(y)/normalization
     #plot
     axs3[0].set_title('real part')
     axs3[0].plot(x, realDS, color='black')
@@ -94,3 +94,6 @@ for t in time2:
     camera2.snap()
 animation2 = camera2.animate()
 animation2.save('delocalized_evolution.gif', writer = 'imagemagick')
+
+time_elapsed = (time.perf_counter() - time_start)
+print ("checkpoint %5.1f secs" % (time_elapsed))

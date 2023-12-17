@@ -5,6 +5,9 @@ from matplotlib import cm, colors
 import matplotlib as mpl
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 import scipy.integrate as integrate
+import time
+
+time_start = time.perf_counter()
 
 #mass of the object
 m=1
@@ -26,39 +29,41 @@ def ES(x, t):
     return (2*np.pi*sigma_squared)**(-1/4)*np.exp(-((x**2*(1-1j*E*t))/(4*sigma_squared)))
 
 #time of flight before delocalization
-t_flight1 = 10
+t_flight1 = 4
 time1 = np.linspace(0, t_flight1, 50)
-
-#Apply measurment, delocalized state
-sigma_squared = a**2*(1+(E*t_flight1)**2)
-sigmad_squared = sigma_squared/10
-phi = -5
-d=50
-
-#calculate normalization, integrate square wavefunction at t=0, time evolution is unitary
-def DS_squared_modulus(x, t=0):
-    D = sigma_squared+sigmad_squared-1j*sigmad_squared*(E*t_flight1+phi)
-    L = np.exp(-(((d*sigma_squared)/(2*D)-x)**2)/(4*((sigma_squared*sigmad_squared)/D+1j*E*a**2*t)))
-    R = np.exp(-(((-d*sigma_squared)/(2*D)-x)**2)/(4*((sigma_squared*sigmad_squared)/D+1j*E*a**2*t)))
-    mod_squared = np.abs(R + L)**2
-    return mod_squared
-
-norm_squared, res = integrate.quad(DS_squared_modulus, -np.inf, np.inf)
-norm = np.sqrt(norm_squared)
-
-def DS(x, t):
-    D = sigma_squared+sigmad_squared-1j*sigmad_squared*(E*t_flight1+phi)
-    L = np.exp(-(((d*sigma_squared)/(2*D)-x)**2)/(4*((sigma_squared*sigmad_squared)/D+1j*E*a**2*t)))
-    R = np.exp(-(((-d*sigma_squared)/(2*D)-x)**2)/(4*((sigma_squared*sigmad_squared)/D+1j*E*a**2*t)))
-    return (R + L)/norm
 
 #time of flight of delocalized state before measurement
 t_flight2 = 50
 time2 = np.linspace(0, t_flight2, 1001)
 
+#Apply measurment, delocalized state
+sigma_squared = a**2*(1+(E*t_flight1)**2)
+sigmad_squared = sigma_squared/10
+phi = -2
+d=10
+#calculate normalization at every timestep, save in list
+norm = []
+for t in time2:
+    def DS_squared_modulus(x, t=t):
+        D = sigma_squared+sigmad_squared-1j*sigmad_squared*(E*t_flight1+phi)
+        L = np.exp(-(((d*sigma_squared)/(2*D)-x)**2)/(4*((sigma_squared*sigmad_squared)/D+1j*E*a**2*t)))
+        R = np.exp(-(((-d*sigma_squared)/(2*D)-x)**2)/(4*((sigma_squared*sigmad_squared)/D+1j*E*a**2*t)))
+        mod_squared = np.abs(R + L)**2
+        return mod_squared
+
+    norm_squared, res = integrate.quad(DS_squared_modulus, -np.inf, np.inf)
+    norm.append(np.sqrt(norm_squared))
+norm_t = np.array(norm)
+
+def DS(x, t):
+    D = sigma_squared+sigmad_squared-1j*sigmad_squared*(E*t_flight1+phi)
+    L = np.exp(-(((d*sigma_squared)/(2*D)-x)**2)/(4*((sigma_squared*sigmad_squared)/D+1j*E*a**2*t)))
+    R = np.exp(-(((-d*sigma_squared)/(2*D)-x)**2)/(4*((sigma_squared*sigmad_squared)/D+1j*E*a**2*t)))
+    return (R + L)
+
 #create grid for plotting, calculate modulus and angle
 X, T = np.meshgrid(x, time2)
-mod = np.abs(DS(X, T))
+mod = np.abs(DS(X, T))/norm_t[:,None]
 phase = np.angle(DS(X, T))
 
 # Creating figure
@@ -73,11 +78,12 @@ ax.get_proj = lambda: np.dot(Axes3D.get_proj(ax), np.diag([scale_x, scale_y, sca
 
 #plot modulus of wavefunction with phase as colour
 norm_colour = mpl.colors.Normalize(vmin=phase.min(), vmax=phase.max())
-DLS = ax.plot_surface(X, T, mod, rstride=10, cstride=10, facecolors=cm.hsv(norm_colour(phase)), edgecolor ='none')
+DLS = ax.plot_surface(X, T, mod, rstride=2, cstride=2, facecolors=cm.hsv(norm_colour(phase)), edgecolor ='none')
 colbar = cm.ScalarMappable(cmap=plt.cm.hsv, norm=norm_colour)
 cbar = fig.colorbar(colbar, ax = ax, orientation='horizontal', fraction=0.05)
 cbar.set_ticks([-np.pi, -np.pi/2 , 0, np.pi/2, np.pi])
 cbar.set_ticklabels(['$-\pi$', '$-\pi/2$', 0, '$\pi/2$', '$\pi$'])
+cbar.set_label('Phase')
 ax.set_title('Delocalized state')
 ax.set_xlabel('X')
 ax.set_ylabel('T')
@@ -87,9 +93,16 @@ ax.set_zlabel('$|\psi|$')
 fig2 = plt.figure()
 ax2 = fig2.add_subplot(1, 1, 1)
 
-ax2.plot(x, np.abs(DS(x, t_flight2)))
+ax2.plot(x, np.abs(DS(x, t_flight2))/norm_t[len(norm_t)-1])
 ax2.set_title('Final timeslice')
 ax2.set_xlabel('X')
 ax2.set_ylabel('$|\psi|$')
 
+time_elapsed = (time.perf_counter() - time_start)
+print ("checkpoint %5.1f secs" % (time_elapsed))
+
 plt.show()
+
+#if __name__ == '__main__':
+#    main()
+

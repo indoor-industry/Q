@@ -4,6 +4,9 @@ import matplotlib.pyplot as plt
 from matplotlib import cm, colors
 from mpl_toolkits.mplot3d.axes3d import Axes3D
 import matplotlib as mpl
+import time
+
+time_start = time.perf_counter()
 
 #mass of the object
 m=1
@@ -47,6 +50,7 @@ colbar = cm.ScalarMappable(cmap=plt.cm.hsv, norm=norm_colour)
 cbar = fig.colorbar(colbar, ax = ax, orientation='horizontal', fraction=0.05)
 cbar.set_ticks([-np.pi, -np.pi/2 , 0, np.pi/2, np.pi])
 cbar.set_ticklabels(['$-\pi$', '$-\pi/2$', 0, '$\pi/2$', '$\pi$'])
+cbar.set_label('Phase')
 ax.set_title('Localized state')
 ax.set_xlabel('X')
 ax.set_ylabel('T')
@@ -59,5 +63,8 @@ ax2.plot(x, np.abs(ES(x, t_flight1)))
 ax2.set_title('Final timeslice')
 ax2.set_xlabel('X')
 ax2.set_ylabel('$|\psi|$')
+
+time_elapsed = (time.perf_counter() - time_start)
+print ("checkpoint %5.1f secs" % (time_elapsed))
 
 plt.show()
