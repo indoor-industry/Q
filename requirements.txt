@@ -3,3 +3,4 @@ matplotlib
 einsteinpy
 sympy
 PyQt5
+scipy

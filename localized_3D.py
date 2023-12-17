@@ -3,6 +3,7 @@ from mpl_toolkits import mplot3d
 import matplotlib.pyplot as plt
 from matplotlib import cm, colors
 from mpl_toolkits.mplot3d.axes3d import Axes3D
+import matplotlib as mpl
 
 #mass of the object
 m=1
@@ -12,7 +13,7 @@ a=1
 E=1/(2*m*a**2)
 
 #values for position
-x = np.linspace(-10, 10, 100)
+x = np.linspace(-10, 10, 1001)
 
 #ground state
 def GS(x, a):
@@ -25,22 +26,11 @@ def ES(x, t):
 
 #time of flight before delocalization
 t_flight1 = 10
-time1 = np.linspace(0, t_flight1, 50)
-
-#Apply measurment, delocalized state, not normalized
-sigma_squared = a**2*(1+(E*t_flight1)**2)
-sigmad_squared = sigma_squared/10
-phi = -2 
-d=10
-def DS(x, t):
-    D = sigma_squared+sigmad_squared-1j*sigmad_squared*(E*t_flight1+phi)
-    L = np.exp(-(((d*sigma_squared)/(2*D)-x)**2)/(4*((sigma_squared*sigmad_squared)/D+1j*E*a**2*t)))
-    R = np.exp(-(((-d*sigma_squared)/(2*D)-x)**2)/(4*((sigma_squared*sigmad_squared)/D+1j*E*a**2*t)))
-    return R + L
+time1 = np.linspace(0, t_flight1, 101)
 
 X, T = np.meshgrid(x, time1)
-wf = np.abs(ES(X, T))
-phase = np.imag(ES(X, T))
+mod = np.abs(ES(X, T))
+phase = np.angle(ES(X, T))
 
 # Creating figure
 fig = plt.figure()
@@ -51,9 +41,13 @@ scale_y = 1
 scale_z = 1
 ax.get_proj = lambda: np.dot(Axes3D.get_proj(ax), np.diag([scale_x, scale_y, scale_z, 1]))
 
-DLS = ax.plot_surface(X, T, wf, cmap='seismic', facecolors=cm.seismic(phase) , edgecolor ='none')
-fig.colorbar(DLS, ax = ax, shrink = 0.5, aspect = 5)
-ax.set_title('Delocalized state')
+norm_colour = mpl.colors.Normalize(vmin=phase.min(), vmax=phase.max())
+LS = ax.plot_surface(X, T, mod, rstride=2, cstride=2, facecolors=cm.hsv(norm_colour(phase)), edgecolor ='none')
+colbar = cm.ScalarMappable(cmap=plt.cm.hsv, norm=norm_colour)
+cbar = fig.colorbar(colbar, ax = ax, orientation='horizontal', fraction=0.05)
+cbar.set_ticks([-np.pi, -np.pi/2 , 0, np.pi/2, np.pi])
+cbar.set_ticklabels(['$-\pi$', '$-\pi/2$', 0, '$\pi/2$', '$\pi$'])
+ax.set_title('Localized state')
 ax.set_xlabel('X')
 ax.set_ylabel('T')
 ax.set_zlabel('$|\psi|$')
