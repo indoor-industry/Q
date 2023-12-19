@@ -12,6 +12,8 @@ time_start = time.perf_counter()
 m=1
 #size of the ground state of an harmonic oscillator
 a=1
+#energy of ground state hbar=1
+E=1/(2*m*a**2)
 
 #values for position
 x = np.linspace(-10, 10, 1001)
@@ -22,16 +24,8 @@ def GS(x, a):
 
 #evolved state
 def ES(x, t):
-    #GS energy
-    E=1/(2*m*a**2)
-    #time dependent width
     sigma_squared = a**2*(1+(E*t)**2)
-    #common phase factor
-    b = (1-1j*E*t)
-
-    normalization_prefactor = (2*np.pi*sigma_squared)**(-1/4)
-    main_exp = np.exp(-(x**2/(4*sigma_squared))*b)
-    return normalization_prefactor*main_exp
+    return (2*np.pi*sigma_squared)**(-1/4)*np.exp(-((x**2*(1-1j*E*t))/(4*sigma_squared)))
 
 #time of flight before delocalization
 t_flight1 = 10
