@@ -37,6 +37,8 @@ def ES(x, t):
 t_flight1 = 10
 time1 = np.linspace(0, t_flight1, 101)
 
+print("Width of wavepacket before double slit: {}".format(np.sqrt(a**2*(1+((1/(2*m*a**2))*t_flight1)**2))))
+
 X, T = np.meshgrid(x, time1)
 mod = np.abs(ES(X, T))
 phase = np.angle(ES(X, T))

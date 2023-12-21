@@ -15,17 +15,15 @@ m=1
 a=1
 #measurement induced phase
 phi_m = -2
-#half distance between slits
-d=20
 
 #values for position
-x = np.linspace(-100, 100, 1001)
+x = np.linspace(-10, 10, 1001)
 
 #time of flight before delocalization
 t_flight1 = 10
 
 #time of flight of delocalized state before measurement
-t_flight2 = 20
+t_flight2 = 1
 time2 = np.linspace(0, t_flight2, 1001)
 
 #Apply measurment, delocalized state
@@ -33,10 +31,15 @@ E=1/(2*m*a**2)
 #phase accumulated during first localized evolution
 phi_1 = E*t_flight1/4
 print("The Wavepackets are moving towards eachother:" + str(phi_1+phi_m<0))
+#ratio of sigma/sigma_d
+ratio = 50
 #width at end of first flight
 sigma_squared = a**2*(1+(E*t_flight1)**2)
+#half distance between slits, we set it to half the width of the initial packets, hence the distance is equal to the width of the packets
+d=np.sqrt(sigma_squared)/2
+print("Width of wavepacket before double slit: {}".format(2*d))
 #squared widht of slits in double slit squared position measurement
-sigmad_squared = sigma_squared/5
+sigmad_squared = sigma_squared/ratio**2
 #total phase
 phi = phi_1 + phi_m
 
@@ -52,7 +55,7 @@ for t in time2:
         mod_squared = np.abs(R + L)**2
         return mod_squared
 
-    norm_squared, res = integrate.quad(DS_squared_modulus, -100, 100)
+    norm_squared, res = integrate.quad(DS_squared_modulus, -np.inf, np.inf)
     norm.append(np.sqrt(norm_squared))
 norm_t = np.array(norm)
 
