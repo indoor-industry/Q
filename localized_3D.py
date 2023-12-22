@@ -45,7 +45,8 @@ phase = np.angle(ES(X, T))
 
 # Creating figure
 fig = plt.figure()
-ax = fig.add_subplot(1, 1, 1, projection='3d')
+gs = mpl.gridspec.GridSpec(ncols=2, nrows=1, width_ratios=[2, 1], wspace=0.5, hspace=0.5,height_ratios=[1])
+ax = fig.add_subplot(gs[0], projection='3d')
 
 scale_x = 2
 scale_y = 1
@@ -64,8 +65,8 @@ ax.set_xlabel('X')
 ax.set_ylabel('T')
 ax.set_zlabel('$|\psi|$')
 
-fig2 = plt.figure()
-ax2 = fig2.add_subplot(1, 1, 1)
+#fig2 = plt.figure()
+ax2 = fig.add_subplot(gs[1])
 
 ax2.plot(x, np.abs(ES(x, t_flight1)))
 ax2.set_title('Final timeslice')

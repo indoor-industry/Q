@@ -71,7 +71,8 @@ phase = np.angle(DS(X, T))
 
 # Creating figure
 fig = plt.figure()
-ax = fig.add_subplot(1, 1, 1, projection='3d')
+gs = mpl.gridspec.GridSpec(ncols=2, nrows=1, width_ratios=[2, 1], wspace=0.5, hspace=0.5,height_ratios=[1])
+ax = fig.add_subplot(gs[0], projection='3d')
 
 #change scale of x axis for better displaying
 scale_x = 2
@@ -93,8 +94,7 @@ ax.set_ylabel('T')
 ax.set_zlabel('$|\psi|$')
 
 #plot final wavefunction shape at measurment (t=t_flight2)
-fig2 = plt.figure()
-ax2 = fig2.add_subplot(1, 1, 1)
+ax2 = fig.add_subplot(gs[1])
 
 ax2.plot(x, np.abs(DS(x, t_flight2))/norm_t[len(norm_t)-1])
 ax2.set_title('Final timeslice')
