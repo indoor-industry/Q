@@ -15,16 +15,16 @@ def complex_quadrature(func, a, b, **kwargs):
     imag_integral = quad(imag_func, a, b, **kwargs)
     return real_integral[0] + 1j*imag_integral[0]
 
-def complex_simpson(func):
+def complex_trapz(func):
     real_func = np.real(func)
     imag_func = np.imag(func)
-    real_integral = simpson(real_func)
-    imag_integral = simpson(imag_func)
+    real_integral = np.trapz(real_func)
+    imag_integral = np.trapz(imag_func)
     return real_integral + 1j*imag_integral
 
 a = 1
 m = 1
-phi_m = -2
+phi_m = -10
 t_flight1 = 10
 
 #Apply measurment, delocalized state
@@ -32,7 +32,7 @@ E=1/(2*m*a**2)
 #phase accumulated during first localized evolution
 phi_1 = E*t_flight1/4
 #ratio of sigma/sigma_d
-ratio = 50
+ratio = 20
 #width at end of first flight
 sigma_squared = a**2*(1+(E*t_flight1)**2)
 #half distance between slits, we set it to half the width of the initial packets, hence the distance is equal to the width of the packets
@@ -58,17 +58,24 @@ def FT(x, k_values):
         ft.append(ft_k)
     return ft
 
-def IFT_evo(ftrans, k, x_values, t_flight):
+def IFT_evo(ftrans, k, x_values, t):
 
     #dispersion relation
-    omega = k**2/(2*m)
+    #omega = k**2/(2*m)
     #omega = np.sqrt(k**2 + m**2)
 
     ift = []
     for x in x_values:
-        integrand = ftrans*np.exp(1j*(k*x-omega*t_flight))
 
-        ift_x = complex_simpson(integrand)
+        L_0 = 1
+        gl = np.sqrt(np.abs(t**2-x**2))
+        xi2 = gl**2/L_0**2
+        f_xi = ((1+1/xi2)/(np.sqrt(xi2)*L_0))*((2-1/xi2)/(1+xi2))
+        omega = 1j*f_xi*(1/(2*np.sqrt(1+1/xi2)))-(1/(2*m*np.sqrt(1+1/xi2)))*k**2
+
+        integrand = ftrans*np.exp(1j*(k*x-omega*t))
+
+        ift_x = complex_trapz(integrand)
         ift.append(ift_x)
     return ift
 
@@ -79,16 +86,22 @@ x = np.linspace(-extent, extent, samples)
 k = np.linspace(-extent, extent, samples)
 
 psi_k = FT(x, k)
-plt.plot(k, np.abs(psi_k))
-plt.show()
+fig1, ax1 = plt.subplots()
+ax1.plot(k, np.abs(psi_k))
 
-t_flight2 = 1
-for t in np.linspace(0, t_flight2, 5):
+fig2, ax2 = plt.subplots()
+
+t_flight2 = 2
+for t in np.linspace(0, t_flight2, 10):
     psi_xt = IFT_evo(psi_k, k, x, t)
-    plt.plot(x, np.abs(psi_xt), label='time={}'.format(t))
+
+    norm = np.sqrt(np.trapz(np.abs(psi_xt)**2))
+
+    ax2.plot(x, np.abs(psi_xt)/norm, label='time={}'.format(t))
 
 plt.legend()
-plt.show()
 
 time_elapsed = (time.perf_counter() - time_start)
 print ("checkpoint %5.1f secs" % (time_elapsed))
+
+plt.show()
