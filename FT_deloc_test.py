@@ -24,7 +24,7 @@ def complex_trapz(func):
 
 a = 1
 m = 1
-phi_m = -10
+phi_m = -2
 t_flight1 = 10
 
 #Apply measurment, delocalized state
@@ -67,11 +67,12 @@ def IFT_evo(ftrans, k, x_values, t):
     ift = []
     for x in x_values:
 
+        eps = 1e-6
         L_0 = 1
         gl = np.sqrt(np.abs(t**2-x**2))
-        xi2 = gl**2/L_0**2
-        f_xi = ((1+1/xi2)/(np.sqrt(xi2)*L_0))*((2-1/xi2)/(1+xi2))
-        omega = 1j*f_xi*(1/(2*np.sqrt(1+1/xi2)))-(1/(2*m*np.sqrt(1+1/xi2)))*k**2
+        re = k**2 + m**2
+        mod = re**2 + m**2*(L_0**4/(gl**6+eps))*(3*L_0**2/(gl**2+eps)+2)**2
+        omega = (0.5*(mod+re))**0.5 + 1j*(0.5*(mod-re))**0.5
 
         integrand = ftrans*np.exp(1j*(k*x-omega*t))
 
@@ -81,7 +82,7 @@ def IFT_evo(ftrans, k, x_values, t):
 
 samples = 1000
 #extent of integration and plotting, enlarge if ripple effects due to boundaries arise
-extent = 30
+extent = 15
 x = np.linspace(-extent, extent, samples)
 k = np.linspace(-extent, extent, samples)
 
@@ -91,11 +92,13 @@ ax1.plot(k, np.abs(psi_k))
 
 fig2, ax2 = plt.subplots()
 
-t_flight2 = 2
-for t in np.linspace(0, t_flight2, 10):
+t_flight2 = 1.5
+for t in np.linspace(0, t_flight2, 5):
     psi_xt = IFT_evo(psi_k, k, x, t)
 
     norm = np.sqrt(np.trapz(np.abs(psi_xt)**2))
+
+    print(norm)
 
     ax2.plot(x, np.abs(psi_xt)/norm, label='time={}'.format(t))
 
