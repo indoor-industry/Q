@@ -10,7 +10,7 @@ import time
 time_start = time.perf_counter()
 
 #mass of the object
-m=1
+m=100
 #size of the ground state of an harmonic oscillator
 a=1
 #measurement induced phase
@@ -20,10 +20,10 @@ phi_m = -2
 x = np.linspace(-10, 10, 1001)
 
 #time of flight before delocalization
-t_flight1 = 10
+t_flight1 = 100
 
 #time of flight of delocalized state before measurement
-t_flight2 = 1
+t_flight2 = 10
 time2 = np.linspace(0, t_flight2, 1001)
 
 #Apply measurment, delocalized state
