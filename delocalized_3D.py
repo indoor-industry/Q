@@ -20,7 +20,7 @@ phi_m = -2
 x = np.linspace(-10, 10, 1001)
 
 #time of flight before delocalization
-t_flight1 = 100
+t_flight1 = 1
 
 #time of flight of delocalized state before measurement
 t_flight2 = 10

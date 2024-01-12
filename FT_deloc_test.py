@@ -1,6 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import scipy
 from scipy.integrate import quad
 import time
 
@@ -25,7 +24,7 @@ def complex_trapz(func):
 a = 1
 m = 100
 phi_m = -2
-t_flight1 = 100
+t_flight1 = 1
 
 #Apply measurment, delocalized state
 E=1/(2*m*a**2)
@@ -64,15 +63,20 @@ def IFT_evo(ftrans, k, x_values, t):
     #omega = k**2/(2*m)
     #omega = np.sqrt(k**2 + m**2)
 
+    #q-metric dispersion relation
+    dim = 4
+    L_0 = 1
+    gl = t
+    xi = (L_0/gl)**2
+    T_squared = 1 + xi
+    g = T_squared**(-1)*(((dim-1)/gl)*(T_squared-T_squared**(-1))-dim*T_squared*(L_0**2/gl**3))
+    #positive solution
+    #omega = 0.5*(1j*g + np.sqrt(-g**2 + 4*T_squared**(-1)*(T_squared**(-1)*k**2 + m**2)))
+    #negative solution
+    omega = 0.5*(1j*g - np.sqrt(-g**2 + 4*T_squared**(-1)*(T_squared**(-1)*k**2 + m**2)))
+
     ift = []
     for x in x_values:
-
-        L_0 = 1
-        gl = np.sqrt(np.abs(t**2-x**2))
-        T_squared = 1 + (L_0/gl)**2
-        re = k**2 + T_squared*m**2
-        mod = re**2 + m**2*(L_0**4/(gl**6))*(7*(L_0/gl)**2 + 10)**2
-        omega = (0.5*(mod+re))**0.5 + 1j*(0.5*(mod-re))**0.5
 
         integrand = ftrans*np.exp(-1j*(k*x-omega*t))
 
@@ -82,7 +86,7 @@ def IFT_evo(ftrans, k, x_values, t):
 
 samples = 10000
 #extent of integration and plotting, enlarge if ripple effects due to boundaries arise
-extent = 80
+extent = 100
 x = np.linspace(-extent, extent, samples)
 k = np.linspace(-extent, extent, samples)
 
@@ -92,8 +96,8 @@ ax1.plot(k, np.abs(psi_k))
 
 fig2, ax2 = plt.subplots()
 
-t_flight2 = 10
-for t in np.linspace(0, t_flight2, 5):
+t_flight2 = 1.5
+for t in np.linspace(0.1, t_flight2, 5):
     psi_xt = IFT_evo(psi_k, k, x, t)
 
     norm = np.sqrt(np.trapz(np.abs(psi_xt)**2))

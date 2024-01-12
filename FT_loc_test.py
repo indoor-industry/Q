@@ -42,15 +42,21 @@ def IFT_evo(ftrans, k, x_values, t_flight1):
     #omega = k**2/(2*m)
     omega = np.sqrt(k**2 + m**2)
 
+    #q-metric dispersion relation
+    dim = 4
+    L_0 = 1
+    gl = t
+    xi = (L_0/gl)**2
+    T_squared = 1 + xi
+    g = T_squared**(-1)*(((dim-1)/gl)*(T_squared-T_squared**(-1))-dim*T_squared*(L_0**2/gl**3))
+    #positive solution
+    #omega = 0.5*(1j*g + np.sqrt(-g**2 + 4*T_squared**(-1)*(T_squared**(-1)*k**2 + m**2)))
+    #negative solution
+    #omega = 0.5*(1j*g - np.sqrt(-g**2 + 4*T_squared**(-1)*(T_squared**(-1)*k**2 + m**2)))
+
+
     ift = []
     for x in x_values:
-
-        L_0 = 1
-        gl = np.sqrt(np.abs(t**2-x**2))
-        T_squared = 1 + (L_0/gl)**2
-        re = k**2 + T_squared*m**2
-        mod = re**2 + m**2*(L_0**4/(gl**6))*(7*(L_0/gl)**2 + 10)**2
-        #omega = (0.5*(mod+re))**0.5 + 1j*(0.5*(mod-re))**0.5
 
         integrand = ftrans*np.exp(-1j*(k*x-omega*t_flight1))
 
@@ -67,7 +73,7 @@ psi_k = FT(x, k)
 plt.plot(k, np.abs(psi_k))
 plt.show()
 
-t_flight = 100
+t_flight = 200
 for t in np.linspace(0, t_flight, 5):
     psi_xt = IFT_evo(psi_k, k, x, t)
 
