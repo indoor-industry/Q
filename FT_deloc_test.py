@@ -61,7 +61,7 @@ def IFT_evo(ftrans, k, x_values, t):
 
     #dispersion relation
     #omega = k**2/(2*m)
-    #omega = np.sqrt(k**2 + m**2)
+    #omega = -np.sqrt(k**2 + m**2)
 
     #q-metric dispersion relation
     dim = 4
@@ -69,10 +69,8 @@ def IFT_evo(ftrans, k, x_values, t):
     gl = t
     xi = (L_0/gl)**2
     T_squared = 1 + xi
-    g = T_squared**(-1)*(((dim-1)/gl)*(T_squared-T_squared**(-1))-dim*T_squared*(L_0**2/gl**3))
-    #positive solution
-    #omega = 0.5*(1j*g + np.sqrt(-g**2 + 4*T_squared**(-1)*(T_squared**(-1)*k**2 + m**2)))
-    #negative solution
+    #g = T_squared**(-1)*(((dim-1)/gl)*(T_squared-T_squared**(-1))-dim*T_squared*(L_0**2/gl**3))
+    g = (((dim-1)/gl)*(1-T_squared**(-2))-dim*T_squared**(-1)*(L_0**2/gl**3))
     omega = 0.5*(1j*g - np.sqrt(-g**2 + 4*T_squared**(-1)*(T_squared**(-1)*k**2 + m**2)))
 
     ift = []

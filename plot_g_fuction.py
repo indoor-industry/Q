@@ -10,7 +10,7 @@ def g(t):
     gl = t
     xi = (L_0/gl)**2
     T_squared = 1 + xi
-    g = T_squared**(-1)*(((dim-1)/gl)*(T_squared-T_squared**(-1))-dim*T_squared*(L_0**2/gl**3))
+    g = (((dim-1)/gl)*(1-T_squared**(-2))-dim*T_squared**(-1)*(L_0**2/gl**3))
 
     return g
 
