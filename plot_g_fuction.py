@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-t = np.linspace(0, 0.1, 100)
+t = np.linspace(0.001, 0.1, 100)
 
 #q-metric dispersion relation
 def g(t):
