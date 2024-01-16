@@ -70,10 +70,10 @@ def IFT_evo(ftrans, k, x_values, t):
     xi = (L_0/gl)**2
     T_squared = 1 + xi
     g = (((dim-1)/gl)*(1-T_squared**(-2))-dim*T_squared**(-1)*(L_0**2/gl**3))
-    #omega = 0.5*(1j*g - np.sqrt(-g**2 + 4*T_squared**(-1)*(T_squared**(-1)*k**2 + m**2)))
-    
+    omega = 0.5*(1j*g - np.sqrt(-g**2 + 4*T_squared**(-1)*(T_squared**(-1)*k**2 + m**2)))
+
     #low k approximation
-    omega = -((T_squared**(-2))/np.sqrt(-g**2 + 4*T_squared**(-1)*m**2))*k**2
+    #omega = -((T_squared**(-2))/np.sqrt(-g**2 + 4*T_squared**(-1)*m**2))*k**2
 
     ift = []
     for x in x_values:
@@ -96,15 +96,15 @@ ax1.plot(k, np.abs(psi_k))
 
 fig2, ax2 = plt.subplots()
 
-t_flight2 = 5.1
-for t in np.linspace(0.1, t_flight2, 6):
-#t_flight2 = 1.5
-#for t in np.linspace(0.1, t_flight2, 5):
+#t_flight2 = 5.1
+#for t in np.linspace(0.1, t_flight2, 6):
+t_flight2 = 1.5
+for t in np.linspace(0.1, t_flight2, 5):
     psi_xt = IFT_evo(psi_k, k, x, t)
 
     norm = np.sqrt(np.trapz(np.abs(psi_xt)**2))
 
-    #print(norm)
+    print(norm)
 
     ax2.plot(x, np.abs(psi_xt)/norm, label='time={}'.format(t))
 
