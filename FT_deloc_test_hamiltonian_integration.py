@@ -59,26 +59,25 @@ def FT(x, k_values):
 
 def IFT_evo(ftrans, k, x_values, t):
 
-    #dispersion relation
-    #omega = k**2/(2*m)
-    #omega = np.sqrt(k**2 + m**2)
-
     #q-metric dispersion relation
     dim = 4
     L_0 = 1
-    gl = t
-    xi = (L_0/gl)**2
-    T_squared = 1 + xi
-    g = (((dim-1)/gl)*(1-T_squared**(-2))-dim*T_squared**(-1)*(L_0**2/gl**3))
-    omega = 0.5*(-1j*g + np.sqrt(-g**2 + 4*T_squared**(-1)*(T_squared**(-1)*k**2 + m**2)))
-
-    #low k approximation
-    #omega = -((T_squared**(-2))/np.sqrt(-g**2 + 4*T_squared**(-1)*m**2))*k**2
+    omega_t_int = []
+    for momentum in k:
+        def omega_t_integrand(gl):
+            xi = (L_0/gl)**2
+            T_squared = 1 + xi
+            g = (((dim-1)/gl)*(1-T_squared**(-2))-dim*T_squared**(-1)*(L_0**2/gl**3))
+            omega_t_integrand = 0.5*(-1j*g + np.sqrt(-g**2 + 4*T_squared**(-1)*(T_squared**(-1)*momentum**2 + m**2)))
+            #omega_t_integrand = np.sqrt(momentum**2+m**2)
+            return omega_t_integrand
+        omega_t_integrated = complex_quadrature(omega_t_integrand, 0.1, t)
+        omega_t_int.append(omega_t_integrated)
 
     ift = []
     for x in x_values:
 
-        integrand = ftrans*np.exp(1j*(k*x-omega*t))
+        integrand = ftrans*np.exp(1j*(k*x-omega_t_int))
 
         ift_x = complex_trapz(integrand)
         ift.append(ift_x)
