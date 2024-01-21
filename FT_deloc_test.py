@@ -21,12 +21,19 @@ def complex_trapz(func):
     imag_integral = np.trapz(imag_func)
     return real_integral + 1j*imag_integral
 
+#Type of dispersion relation tu use for time evolution
+DR = 'possible_Q'
+
+#Width of initial state gaussian
 a = 1
+#mass
 m = 100
+#measurement induced phase
 phi_m = -50
+#time of flight before delocalization
 t_flight1 = 500
 
-#Apply measurment, delocalized state
+#Energy of initial state
 E=1/(2*m*a**2)
 #phase accumulated during first localized evolution
 phi_1 = E*t_flight1/4
@@ -38,9 +45,11 @@ sigma_squared = a**2*(1+(E*t_flight1)**2)
 d=np.sqrt(sigma_squared)/2
 #squared widht of slits in double slit squared position measurement
 sigmad_squared = sigma_squared/ratio**2
-#total phase
+#total phase, must be negative for convergence of wavepackets
 phi = phi_1 + phi_m
 
+#Defines the delocalized state in position space after measurment 
+#of squared position and computes the spatial fourier trasform
 def FT(x, k_values):
     ft = []
     for k in k_values:
@@ -57,23 +66,34 @@ def FT(x, k_values):
         ft.append(ft_k)
     return ft
 
+#Computes the inverse fourier transform after evolving each plane wave component with the correct time harmonic function
 def IFT_evo(ftrans, k, x_values, t):
 
     #dispersion relation
-    #omega = k**2/(2*m)
-    #omega = np.sqrt(k**2 + m**2)
+    if DR == 'SCH':
+        omega = k**2/(2*m)
+    
+    elif DR == 'KG':
+        omega = np.sqrt(k**2 + m**2)
 
     #q-metric dispersion relation
-    dim = 4
-    L_0 = 1
-    gl = t
-    xi = (L_0/gl)**2
-    T_squared = 1 + xi
-    g = (((dim-1)/gl)*(1-T_squared**(-2))-dim*T_squared**(-1)*(L_0**2/gl**3))
-    omega = 0.5*(-1j*g + np.sqrt(-g**2 + 4*T_squared**(-1)*(T_squared**(-1)*k**2 + m**2)))
+    elif DR == 'Q':
+        dim = 4
+        L_0 = 1
+        gl = t
+        xi = (L_0/gl)**2
+        T_squared = 1 + xi
+        g = (((dim-1)/gl)*(1-T_squared**(-2))-dim*T_squared**(-1)*(L_0**2/gl**3))
+        omega = 0.5*(-1j*g + np.emath.sqrt(-g**2 + 4*T_squared**(-1)*(T_squared**(-1)*k**2 + m**2)))
 
-    #low k approximation
-    #omega = -((T_squared**(-2))/np.sqrt(-g**2 + 4*T_squared**(-1)*m**2))*k**2
+    elif DR == 'possible_Q':
+        dim = 4
+        L_0 = 1
+        gl = t
+        xi = (L_0/gl)**2
+        T_squared = 1 + xi
+        g = -dim*T_squared**(-1)*(L_0**2/gl**3)
+        omega = 0.5*(-1j*g + np.emath.sqrt(-g**2 + 4*T_squared**(-1)*(T_squared**(-1)*k**2 + m**2)))
 
     ift = []
     for x in x_values:
@@ -84,30 +104,44 @@ def IFT_evo(ftrans, k, x_values, t):
         ift.append(ift_x)
     return ift
 
+#number of points for integration and plotting
 samples = 10000
 #extent of integration and plotting, enlarge if ripple effects due to boundaries arise
 k_extent = 100
-x_extent = 10
+x_extent = 100
+
 x = np.linspace(-x_extent, x_extent, samples)
 k = np.linspace(-k_extent, k_extent, samples)
 
+#Compute FT
 psi_k = FT(x, k)
-fig1, ax1 = plt.subplots()
-ax1.plot(k, np.abs(psi_k))
 
-fig2, ax2 = plt.subplots()
+#Define plot, plot FT
+fig, ax = plt.subplots(1, 2)
+ax[0].plot(k, np.abs(psi_k))
+ax[0].set_title('Momentum space')
+ax[0].set_xlabel('k')
+ax[0].set_ylabel('$\psi (k)$')
 
-t_flight2 = 5
-for t in np.linspace(0.1, t_flight2, 5):
+#Time of flight after delocalization
+t_flight2 = 3
+#Compute the wavefunction evolved for different times
+eps = 0.001
+for t in np.linspace(0+eps, t_flight2, 5):
     psi_xt = IFT_evo(psi_k, k, x, t)
 
+    #Compute norm of wavefunction to be used for normalization below
     norm = np.sqrt(np.trapz(np.abs(psi_xt)**2))
 
     print(norm)
 
-    ax2.plot(x, np.abs(psi_xt)/norm, label='time={}'.format(t))
+    ax[1].plot(x, np.abs(psi_xt)/norm, label='time=%.2f'%t)
 
-plt.legend()
+ax[1].set_title('Position space')
+ax[1].set_xlabel('x')
+ax[1].set_ylabel('$\psi (x, t)$')
+ax[1].legend()
+ax[1].set_xlim([-5, 5])
 
 time_elapsed = (time.perf_counter() - time_start)
 print ("checkpoint %5.1f secs" % (time_elapsed))

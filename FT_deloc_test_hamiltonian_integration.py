@@ -68,7 +68,7 @@ def IFT_evo(ftrans, k, x_values, t):
             xi = (L_0/gl)**2
             T_squared = 1 + xi
             g = (((dim-1)/gl)*(1-T_squared**(-2))-dim*T_squared**(-1)*(L_0**2/gl**3))
-            omega_t_integrand = 0.5*(-1j*g + np.sqrt(-g**2 + 4*T_squared**(-1)*(T_squared**(-1)*momentum**2 + m**2)))
+            omega_t_integrand = 0.5*(-1j*g + np.emath.sqrt(-g**2 + 4*T_squared**(-1)*(T_squared**(-1)*momentum**2 + m**2)))
             #omega_t_integrand = np.sqrt(momentum**2+m**2)
             return omega_t_integrand
         omega_t_integrated = complex_quadrature(omega_t_integrand, 0.1, t)
