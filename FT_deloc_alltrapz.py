@@ -5,15 +5,6 @@ import time
 
 time_start = time.perf_counter()
 
-def complex_quadrature(func, a, b, **kwargs):
-    def real_func(x):
-        return np.real(func(x))
-    def imag_func(x):
-        return np.imag(func(x))
-    real_integral = quad(real_func, a, b, **kwargs)
-    imag_integral = quad(imag_func, a, b, **kwargs)
-    return real_integral[0] + 1j*imag_integral[0]
-
 def complex_trapz(func):
     real_func = np.real(func)
     imag_func = np.imag(func)
@@ -22,23 +13,23 @@ def complex_trapz(func):
     return real_integral + 1j*imag_integral
 
 #Type of dispersion relation tu use for time evolution
-DR = 'Q'
+DR = 'SCHQ'
 
 #Width of initial state gaussian
 a = 1
 #mass
-m = 100
+m = 1
 #measurement induced phase, loosely corresponds to the speed of ricombination IMPORTANT!
-phi_m = -50
+phi_m = -20
 #time of flight before delocalization
-t_flight1 = 500
+t_flight1 = 10
 
 #Energy of initial state
 E=1/(2*m*a**2)
 #phase accumulated during first localized evolution
 phi_1 = E*t_flight1/4
 #ratio of sigma/sigma_d
-ratio = 100
+ratio = 10
 #width at end of first flight
 sigma_squared = a**2*(1+(E*t_flight1)**2)
 #half distance between slits, we set it to half the width of the initial packets, hence the distance is equal to the width of the packets
@@ -50,21 +41,20 @@ print('slit width =' + str(np.sqrt(sigmad_squared)))
 #total phase, must be negative for convergence of wavepackets
 phi = phi_1 + phi_m
 
+def integrand(x):
+    evolved_ground_state = (1/(2*np.pi*sigma_squared)**(-1/4))*np.exp(-(x**2/sigma_squared)*(0.25-1j*phi_1))
+    measurement_induced_phase = np.exp(1j*phi_m*(x**2/sigma_squared))
+    L = evolved_ground_state*measurement_induced_phase*np.exp(-(x+d)**2/(4*sigmad_squared))
+    R = evolved_ground_state*measurement_induced_phase*np.exp(-(x-d)**2/(4*sigmad_squared))
+    initial_state = L + R
+    return initial_state
+
 #Defines the delocalized state in position space after measurment 
 #of squared position and computes the spatial fourier trasform
 def FT(x, k_values):
     ft = []
     for k in k_values:
-        def integrand(x):
-            a_coeff = (sigma_squared+sigmad_squared*(1-4j*phi))/(4*sigma_squared*sigmad_squared)
-            b_coeff = -d/(2*sigmad_squared)
-            c_coeff = d**2/(4*sigmad_squared)
-            L = np.exp(-a_coeff*x**2-b_coeff*x-c_coeff)
-            R = np.exp(-a_coeff*x**2+b_coeff*x-c_coeff)
-            initial_state = L + R
-            return initial_state*np.exp(-1j*k*x)
-
-        ft_k = complex_quadrature(integrand, -np.inf, np.inf)
+        ft_k = complex_trapz(integrand(x)*np.exp(-1j*k*x))#, -np.inf, np.inf)
         ft.append(ft_k)
     return ft
 
@@ -88,6 +78,15 @@ def IFT_evo(ftrans, k, x_values, t):
         g = -dim*T_squared**(-1)*(L_0**2/gl**3)
         omega = 0.5*(-1j*g + np.emath.sqrt(-g**2 + 4*T_squared**(-1)*(T_squared**(-1)*k**2 + m**2)))
 
+    elif DR == 'SCHQ':
+        dim = 4
+        L_0 = 1
+        gl = t
+        xi = (L_0/gl)**2
+        T_squared = 1 + xi
+        g = -dim*T_squared**(-1)*(L_0**2/gl**3)
+        omega = (T_squared**(-2)/(np.emath.sqrt(-g**2+4*T_squared**(-1)*m**2)))*k**2
+
     ift = []
     for x in x_values:
 
@@ -100,25 +99,32 @@ def IFT_evo(ftrans, k, x_values, t):
 #number of points for integration and plotting
 samples = 10000
 #extent of integration and plotting, enlarge if ripple effects due to boundaries arise
-k_extent = 100
-x_extent = 100
+k_extent = 20
+x_extent = 20
 
 x = np.linspace(-x_extent, x_extent, samples)
 k = np.linspace(-k_extent, k_extent, samples)
+
+#initial state
+IS = [integrand(pos) for pos in x]
 
 #Compute FT
 psi_k = FT(x, k)
 
 #Define plot, plot FT
+fig0, ax0 = plt.subplots()
 fig1, ax1 = plt.subplots()
 fig2, ax2 = plt.subplots()
+
+ax0.plot(x, np.abs(IS))
+
 ax1.plot(k, np.abs(psi_k))
 ax1.set_title('Momentum space')
 ax1.set_xlabel('k')
 ax1.set_ylabel('$\psi (k)$')
 
 #Time of flight after delocalization
-t_flight2 = 3
+t_flight2 = 1.5
 #Compute the wavefunction evolved for different times
 eps = 0.001
 for t in np.linspace(0+eps, t_flight2, 5):
@@ -135,7 +141,7 @@ ax2.set_title('Position space')
 ax2.set_xlabel('x')
 ax2.set_ylabel('$\psi (x, t)$')
 ax2.legend()
-ax2.set_xlim([-4, 4])
+ax2.set_xlim([-2*d, 2*d])
 
 time_elapsed = (time.perf_counter() - time_start)
 print ("checkpoint %5.1f secs" % (time_elapsed))

@@ -39,7 +39,7 @@ def IFT_evo(ftrans, k, x_values, t_flight1):
 
     #dispersion relation
     #omega = k**2/(2*m)
-    omega = np.sqrt(k**2 + m**2)
+    #omega = np.sqrt(k**2 + m**2)
 
     #q-metric dispersion relation
     dim = 4
@@ -47,8 +47,8 @@ def IFT_evo(ftrans, k, x_values, t_flight1):
     gl = t
     xi = (L_0/gl)**2
     T_squared = 1 + xi
-    g = T_squared**(-1)*(((dim-1)/gl)*(T_squared-T_squared**(-1))-dim*T_squared*(L_0**2/gl**3))
-    #omega = 0.5*(1j*g - np.sqrt(-g**2 + 4*T_squared**(-1)*(T_squared**(-1)*k**2 + m**2)))
+    g = (((dim-1)/gl)*(1-T_squared**(-2))-dim*T_squared**(-1)*(L_0**2/gl**3))    
+    omega = 0.5*(1j*g - np.emath.sqrt(-g**2 + 4*T_squared**(-1)*(T_squared**(-1)*k**2 + m**2)))
 
     ift = []
     for x in x_values:
@@ -59,7 +59,7 @@ def IFT_evo(ftrans, k, x_values, t_flight1):
         ift.append(ift_x)
     return ift
 
-samples = 10000
+samples = 1000
 extent = 10
 x = np.linspace(-extent, extent, samples)
 k = np.linspace(-extent, extent, samples)
@@ -68,8 +68,9 @@ psi_k = FT(x, k)
 plt.plot(k, np.abs(psi_k))
 plt.show()
 
-t_flight = 20
-for t in np.linspace(0.1, t_flight, 5):
+t_flight = 500
+eps = 0.001
+for t in np.linspace(eps, t_flight, 5):
     psi_xt = IFT_evo(psi_k, k, x, t)
 
     norm = np.sqrt(np.trapz(np.abs(psi_xt)**2))
