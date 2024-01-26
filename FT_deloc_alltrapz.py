@@ -13,17 +13,16 @@ def complex_trapz(func):
     return real_integral + 1j*imag_integral
 
 #Type of dispersion relation tu use for time evolution
-DR = 'SCHQ'
+DR = 'Q'
 
 #Width of initial state gaussian
 a = 1
 #mass
-m = 1
+m = 10
 #measurement induced phase, loosely corresponds to the speed of ricombination IMPORTANT!
-phi_m = -20
+phi_m = -4
 #time of flight before delocalization
-t_flight1 = 10
-
+t_flight1 = 1
 #Energy of initial state
 E=1/(2*m*a**2)
 #phase accumulated during first localized evolution
@@ -44,8 +43,8 @@ phi = phi_1 + phi_m
 def integrand(x):
     evolved_ground_state = (1/(2*np.pi*sigma_squared)**(-1/4))*np.exp(-(x**2/sigma_squared)*(0.25-1j*phi_1))
     measurement_induced_phase = np.exp(1j*phi_m*(x**2/sigma_squared))
-    L = evolved_ground_state*measurement_induced_phase*np.exp(-(x+d)**2/(4*sigmad_squared))
-    R = evolved_ground_state*measurement_induced_phase*np.exp(-(x-d)**2/(4*sigmad_squared))
+    L = measurement_induced_phase*np.exp(-(x+d)**2/(4*sigmad_squared))#*evolved_ground_state
+    R = measurement_induced_phase*np.exp(-(x-d)**2/(4*sigmad_squared))#*evolved_ground_state
     initial_state = L + R
     return initial_state
 
@@ -99,8 +98,8 @@ def IFT_evo(ftrans, k, x_values, t):
 #number of points for integration and plotting
 samples = 10000
 #extent of integration and plotting, enlarge if ripple effects due to boundaries arise
-k_extent = 20
-x_extent = 20
+k_extent = 50
+x_extent = 4
 
 x = np.linspace(-x_extent, x_extent, samples)
 k = np.linspace(-k_extent, k_extent, samples)

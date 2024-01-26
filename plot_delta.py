@@ -1,20 +1,28 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-m = 1
+m = 10
 d = 1
-t = np.linspace(0.1, 3, 1000)
-k = np.linspace(0.1, 5, 5)
 
-def delta_S(t):
+t_samples = 1000
+t = np.linspace(0.1, 10, t_samples)
+k = np.linspace(10, 20, 5)
+
+print('angle between first maxima and center = ' + str(((2*np.pi)/(k*d))))
+
+def delta_S(t, k):
     v_g = k/m
     omega = k**2/(2*m)
-    return ((2*np.pi)/(m*d))*t
+    
+    #return ((2*np.pi)/(m*d))*t
+    return np.tan(np.arcsin((2*np.pi)/(k*d)))*v_g*t
 
 def delta_KG(t, k):
     omega = np.sqrt(k**2 + m**2)
     v_g = k/omega
-    return ((2*np.pi)/d)*(t/omega)
+    
+    return np.tan(np.arcsin((2*np.pi)/(k*d)))*v_g*t
+    #return ((2*np.pi)/d)*(t/omega)
 
 def delta_Q(t, k):
     #q-metric dispersion relation
@@ -26,7 +34,9 @@ def delta_Q(t, k):
     g = -dim*T_squared**(-1)*(L_0**2/gl**3)
     squareroot = np.emath.sqrt(-g**2 + 4*T_squared**(-1)*(T_squared**(-1)*k**2 + m**2))
     v_g = (2*T_squared**(-2)*k)/squareroot
-    return ((4*np.pi)/d)*((T_squared**(-2))/(squareroot))*t
+    
+    #return ((4*np.pi)/d)*((T_squared**(-2))/(squareroot))*t
+    return np.tan(np.arcsin((2*np.pi)/(k*d)))*v_g*t
 
 def delta_Q_lowk(t, k):
     dim = 4
@@ -36,23 +46,30 @@ def delta_Q_lowk(t, k):
     T_squared = 1 + xi
     g = -dim*T_squared**(-1)*(L_0**2/gl**3)
     squareroot = np.emath.sqrt(-g**2 + 4*T_squared**(-1)*m**2)
-    return (4*np.pi*T_squared**(-2)*t)/(d*squareroot)
+    v_g = (2*T_squared**(-2)*k)/squareroot
+    
+    #return (4*np.pi*T_squared**(-2)*t)/(d*squareroot)
+    return np.tan(np.arcsin((2*np.pi)/(k*d)))*v_g*t
 
-fig, axs = plt.subplots(3)
+fig, axs = plt.subplots(4)
 fig.suptitle('Fringe maxima separations')
-axs[0].set_title('Schroedinger')
-axs[1].set_title('KG')
-axs[2].set_title('Q')
-
-delta_S_values = [delta_S(time) for time in t]
-axs[0].plot(t, delta_S_values)
+axs[0].set_title('Schr.', rotation='vertical', x=-0.07, y=0)
+axs[1].set_title('low k Q', rotation='vertical', x=-0.07, y=0)
+axs[2].set_title('KG', rotation='vertical', x=-0.07, y=0)
+axs[3].set_title('Q', rotation='vertical', x=-0.07, y=0)
 
 for ks in k:
-    delta_KG_values = [delta_KG(time, ks) for time in t]
-    axs[1].plot(t, delta_KG_values, label='k=%.2f'%ks)
+    delta_S_values = [delta_S(time, ks) for time in t]
+    axs[0].plot(t, delta_S_values)
 
     delta_Q_values = [delta_Q_lowk(time, ks) for time in t]
-    axs[2].plot(t, np.real(delta_Q_values))
+    axs[1].plot(t, np.real(delta_Q_values))
 
-axs[1].legend()
+    delta_KG_values = [delta_KG(time, ks) for time in t]
+    axs[2].plot(t, delta_KG_values, label='k=%.2f'%ks)
+
+    delta_Q_values = [delta_Q(time, ks) for time in t]
+    axs[3].plot(t, np.real(delta_Q_values))
+
+axs[2].legend()
 plt.show()

@@ -22,16 +22,16 @@ def complex_trapz(func):
     return real_integral + 1j*imag_integral
 
 a = 1
-m = 100
-phi_m = -50
-t_flight1 = 500
+m = 10
+phi_m = -4
+t_flight1 = 1
 
 #Apply measurment, delocalized state
 E=1/(2*m*a**2)
 #phase accumulated during first localized evolution
 phi_1 = E*t_flight1/4
 #ratio of sigma/sigma_d
-ratio = 100
+ratio = 10
 #width at end of first flight
 sigma_squared = a**2*(1+(E*t_flight1)**2)
 #half distance between slits, we set it to half the width of the initial packets, hence the distance is equal to the width of the packets
@@ -67,9 +67,9 @@ def IFT_evo(ftrans, k, x_values, t):
         def omega_t_integrand(gl):
             xi = (L_0/gl)**2
             T_squared = 1 + xi
-            g = (((dim-1)/gl)*(1-T_squared**(-2))-dim*T_squared**(-1)*(L_0**2/gl**3))
-            omega_t_integrand = 0.5*(-1j*g + np.emath.sqrt(-g**2 + 4*T_squared**(-1)*(T_squared**(-1)*momentum**2 + m**2)))
-            #omega_t_integrand = np.sqrt(momentum**2+m**2)
+            g = -dim*T_squared**(-1)*(L_0**2/gl**3)
+            #omega_t_integrand = 0.5*(-1j*g + np.emath.sqrt(-g**2 + 4*T_squared**(-1)*(T_squared**(-1)*momentum**2 + m**2)))
+            omega_t_integrand = np.sqrt(momentum**2+m**2)
             return omega_t_integrand
         omega_t_integrated = complex_quadrature(omega_t_integrand, 0.1, t)
         omega_t_int.append(omega_t_integrated)
@@ -83,10 +83,10 @@ def IFT_evo(ftrans, k, x_values, t):
         ift.append(ift_x)
     return ift
 
-samples = 10000
+samples = 1000
 #extent of integration and plotting, enlarge if ripple effects due to boundaries arise
-k_extent = 100
-x_extent = 10
+k_extent = 50
+x_extent = 3
 x = np.linspace(-x_extent, x_extent, samples)
 k = np.linspace(-k_extent, k_extent, samples)
 
@@ -96,7 +96,7 @@ ax1.plot(k, np.abs(psi_k))
 
 fig2, ax2 = plt.subplots()
 
-t_flight2 = 5
+t_flight2 = 10
 for t in np.linspace(0.1, t_flight2, 5):
     psi_xt = IFT_evo(psi_k, k, x, t)
 

@@ -10,20 +10,20 @@ import time
 time_start = time.perf_counter()
 
 #mass of the object
-m=100
+m=10
 #size of the ground state of an harmonic oscillator
 a=1
 #measurement induced phase
-phi_m = -2
+phi_m = -4
 
 #values for position
-x = np.linspace(-10, 10, 1001)
+x = np.linspace(-4, 4, 1001)
 
 #time of flight before delocalization
 t_flight1 = 1
 
 #time of flight of delocalized state before measurement
-t_flight2 = 10
+t_flight2 = 1.5
 time2 = np.linspace(0, t_flight2, 1001)
 
 #Apply measurment, delocalized state
@@ -32,7 +32,7 @@ E=1/(2*m*a**2)
 phi_1 = E*t_flight1/4
 print("The Wavepackets are moving towards eachother:" + str(phi_1+phi_m<0))
 #ratio of sigma/sigma_d
-ratio = 50
+ratio = 10
 #width at end of first flight
 sigma_squared = a**2*(1+(E*t_flight1)**2)
 #half distance between slits, we set it to half the width of the initial packets, hence the distance is equal to the width of the packets

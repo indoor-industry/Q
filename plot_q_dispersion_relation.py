@@ -1,10 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-m = 1
+m = 10
 
 eps=0.001
-t_few = np.linspace(eps, 3, 5)
+t_few = np.linspace(eps, 2, 5)
 t_many = np.linspace(0.15, 6, 1000)
 k = np.linspace(-100, 100, 10001)
 
@@ -23,7 +23,7 @@ def SCHR_DR(k):
 KG_omega_values = [np.abs(KG_DR(momentum)) for momentum in k]
 SCHR_DR_omega_values = [np.abs(SCHR_DR(momentum)) for momentum in k]
 
-ax1.plot(k, SCHR_DR_omega_values, label='KG', color='black')
+ax1.plot(k, KG_omega_values, label='KG', color='black')
 
 #q-metric dispersion relation
 def Q_DR(t, k):
@@ -48,10 +48,10 @@ def Q_DR_lowk(t, k):
     return omega
 
 for time in t_few:
-    Q_omega_values_real = [np.real(Q_DR_lowk(time, momentum)) for momentum in k]
+    Q_omega_values_real = [np.real(Q_DR(time, momentum)) for momentum in k]
     ax1.plot(k, Q_omega_values_real, label='GL (time) = ''%.2f'''%time)
 
-Q_omega_values_imagpart = [np.imag(Q_DR_lowk(time, 1)) for time in t_many]
+Q_omega_values_imagpart = [np.imag(Q_DR(time, 1)) for time in t_many]
 ax2.plot(t_many, Q_omega_values_imagpart)
 ax2.set_title('Imaginary part of $\omega$')
 ax2.set_xlabel('$\sigma$')
