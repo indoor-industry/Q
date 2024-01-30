@@ -27,18 +27,18 @@ DR = 'Q'
 #Width of initial state gaussian
 a = 1
 #mass
-m = 100
+m = 1
 #measurement induced phase, loosely corresponds to the speed of ricombination IMPORTANT!
-phi_m = -50
+phi_m = -2
 #time of flight before delocalization
-t_flight1 = 500
+t_flight1 = 10
 
 #Energy of initial state
 E=1/(2*m*a**2)
 #phase accumulated during first localized evolution
 phi_1 = E*t_flight1/4
 #ratio of sigma/sigma_d
-ratio = 100
+ratio = 50
 #width at end of first flight
 sigma_squared = a**2*(1+(E*t_flight1)**2)
 #half distance between slits, we set it to half the width of the initial packets, hence the distance is equal to the width of the packets

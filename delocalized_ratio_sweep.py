@@ -26,7 +26,7 @@ for ratio in v:
     #time of flight before delocalization
     t_flight1 = 10
     #time of flight of delocalized state before measurement
-    t_flight2 = 1
+    t_flight2 = 1.5
     #Energy of HO GS
     E=1/(2*m*a**2)
     #phase accumulated during first localized evolution

@@ -13,22 +13,22 @@ def complex_trapz(func):
     return real_integral + 1j*imag_integral
 
 #Type of dispersion relation tu use for time evolution
-DR = 'Q'
+DR = 'SCHQ'
 
 #Width of initial state gaussian
 a = 1
 #mass
-m = 10
+m = 1
 #measurement induced phase, loosely corresponds to the speed of ricombination IMPORTANT!
-phi_m = -4
+phi_m = -2
 #time of flight before delocalization
-t_flight1 = 1
+t_flight1 = 10
 #Energy of initial state
 E=1/(2*m*a**2)
 #phase accumulated during first localized evolution
 phi_1 = E*t_flight1/4
 #ratio of sigma/sigma_d
-ratio = 10
+ratio = 50
 #width at end of first flight
 sigma_squared = a**2*(1+(E*t_flight1)**2)
 #half distance between slits, we set it to half the width of the initial packets, hence the distance is equal to the width of the packets
@@ -84,7 +84,7 @@ def IFT_evo(ftrans, k, x_values, t):
         xi = (L_0/gl)**2
         T_squared = 1 + xi
         g = -dim*T_squared**(-1)*(L_0**2/gl**3)
-        omega = (T_squared**(-2)/(np.emath.sqrt(-g**2+4*T_squared**(-1)*m**2)))*k**2
+        omega = 0.5*(-1j*g + np.emath.sqrt(-g**2+4*T_squared**(-1)*m**2)) + (T_squared**(-2)/(np.emath.sqrt(-g**2+4*T_squared**(-1)*m**2)))*k**2
 
     ift = []
     for x in x_values:
@@ -98,8 +98,8 @@ def IFT_evo(ftrans, k, x_values, t):
 #number of points for integration and plotting
 samples = 10000
 #extent of integration and plotting, enlarge if ripple effects due to boundaries arise
-k_extent = 50
-x_extent = 4
+k_extent = 30
+x_extent = 5
 
 x = np.linspace(-x_extent, x_extent, samples)
 k = np.linspace(-k_extent, k_extent, samples)
@@ -111,16 +111,18 @@ IS = [integrand(pos) for pos in x]
 psi_k = FT(x, k)
 
 #Define plot, plot FT
-fig0, ax0 = plt.subplots()
-fig1, ax1 = plt.subplots()
+fig1, ax1 = plt.subplots(1,2)
 fig2, ax2 = plt.subplots()
 
-ax0.plot(x, np.abs(IS))
+ax1[0].plot(x, np.abs(IS))
+ax1[0].set_title('Position space')
+ax1[0].set_xlabel('x')
+ax1[0].set_ylabel('$\psi (x)$')
 
-ax1.plot(k, np.abs(psi_k))
-ax1.set_title('Momentum space')
-ax1.set_xlabel('k')
-ax1.set_ylabel('$\psi (k)$')
+ax1[1].plot(k, np.abs(psi_k))
+ax1[1].set_title('Momentum space')
+ax1[1].set_xlabel('k')
+ax1[1].set_ylabel('$\psi (k)$')
 
 #Time of flight after delocalization
 t_flight2 = 1.5
