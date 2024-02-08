@@ -2,8 +2,18 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import quad
 import time
+from celluloid import Camera
 
 time_start = time.perf_counter()
+
+def complex_quadrature(func, a, b, **kwargs):
+    def real_func(x):
+        return np.real(func(x))
+    def imag_func(x):
+        return np.imag(func(x))
+    real_integral = quad(real_func, a, b, **kwargs)
+    imag_integral = quad(imag_func, a, b, **kwargs)
+    return real_integral[0] + 1j*imag_integral[0]
 
 def complex_trapz(func):
     real_func = np.real(func)
@@ -13,7 +23,7 @@ def complex_trapz(func):
     return real_integral + 1j*imag_integral
 
 #Type of dispersion relation tu use for time evolution
-DR = 'SCH'
+DR = 'Q'
 
 #Width of initial state gaussian
 a = 1
@@ -60,36 +70,27 @@ def FT(x, k_values):
 #Computes the inverse fourier transform after evolving each plane wave component with the correct time harmonic function
 def IFT_evo(ftrans, k, x_values, t):
 
-    #dispersion relation
-    if DR == 'SCH':
-        omega = k**2/(2*m)
-    
-    elif DR == 'KG':
-        omega = np.sqrt(k**2 + m**2)
-
     #q-metric dispersion relation
-    elif DR == 'Q':
-        dim = 4
-        L_0 = 1
-        gl = t
-        xi = (L_0/gl)**2
-        T_squared = 1 + xi
-        g = -dim*T_squared**(-1)*(L_0**2/gl**3)
-        omega = 0.5*(-1j*g + np.emath.sqrt(-g**2 + 4*T_squared**(-1)*(T_squared**(-1)*k**2 + m**2)))
-
-    elif DR == 'SCHQ':
-        dim = 4
-        L_0 = 1
-        gl = t
-        xi = (L_0/gl)**2
-        T_squared = 1 + xi
-        g = -dim*T_squared**(-1)*(L_0**2/gl**3)
-        omega = 0.5*(-1j*g + np.emath.sqrt(-g**2+4*T_squared**(-1)*m**2)) + (T_squared**(-2)/(np.emath.sqrt(-g**2+4*T_squared**(-1)*m**2)))*k**2
+    dim = 4
+    L_0 = 1
+    omega_t_int = []
+    for momentum in k:
+        def omega_t_integrand(gl):
+            xi = (L_0/gl)**2
+            T_squared = 1 + xi
+            T_sq_inv = 1/T_squared
+            g = -dim*T_sq_inv*(L_0**2/gl**3)
+            #ADDED A MINUS IT DOESN'T WORK OTHERWISE :'(
+            omega_t_integrand = -(T_sq_inv*momentum**2 + (1-T_squared)*m**2 - 1j*m*T_squared*g)/(T_squared*(g - 2*1j*m))
+            #omega_t_integrand = 1j*(momentum**2/(2*m))
+            return omega_t_integrand
+        omega_t_integrated = complex_quadrature(omega_t_integrand, 0.01, t)
+        omega_t_int.append(omega_t_integrated)
 
     ift = []
     for x in x_values:
 
-        integrand = ftrans*np.exp(1j*(k*x-omega*t))
+        integrand = ftrans*np.exp(1j*k*x-omega_t_int)
 
         ift_x = complex_trapz(integrand)
         ift.append(ift_x)
@@ -110,25 +111,15 @@ IS = [integrand(pos) for pos in x]
 #Compute FT
 psi_k = FT(x, k)
 
-#Define plot, plot FT
-fig1, ax1 = plt.subplots(1,2)
+#Define plot
 fig2, ax2 = plt.subplots()
-
-ax1[0].plot(x, np.abs(IS))
-ax1[0].set_title('Position space')
-ax1[0].set_xlabel('x')
-ax1[0].set_ylabel('$\psi (x)$')
-
-ax1[1].plot(k, np.abs(psi_k))
-ax1[1].set_title('Momentum space')
-ax1[1].set_xlabel('k')
-ax1[1].set_ylabel('$\psi (k)$')
+camera = Camera(fig2)
 
 #Time of flight after delocalization
-t_flight2 = 1.5
+t_flight2 = 5
 #Compute the wavefunction evolved for different times
 eps = 0.001
-for t in np.linspace(0+eps, t_flight2, 5):
+for t in np.linspace(0+eps, t_flight2, 200):
     psi_xt = IFT_evo(psi_k, k, x, t)
 
     #Compute norm of wavefunction to be used for normalization below
@@ -136,15 +127,16 @@ for t in np.linspace(0+eps, t_flight2, 5):
 
     print(norm)
 
-    ax2.plot(x, np.abs(psi_xt)/norm, label='time=%.2f'%t)
+    plot = ax2.plot(x, np.abs(psi_xt)/norm, color = 'black')
+    ax2.legend(plot, [f'time = {t:.2f}'])
+    ax2.set_title('Position space')
+    ax2.set_xlabel('x')
+    ax2.set_ylabel('$\psi (x, t)$')
+    ax2.set_xlim([-2*d, 2*d])
+    camera.snap()
 
-ax2.set_title('Position space')
-ax2.set_xlabel('x')
-ax2.set_ylabel('$\psi (x, t)$')
-ax2.legend()
-ax2.set_xlim([-2*d, 2*d])
+animation = camera.animate(interval = 2)
+animation.save('plots/Q_evo.gif')
 
 time_elapsed = (time.perf_counter() - time_start)
 print ("checkpoint %5.1f secs" % (time_elapsed))
-
-plt.show()

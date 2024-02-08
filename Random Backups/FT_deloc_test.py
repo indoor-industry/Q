@@ -22,9 +22,9 @@ def complex_trapz(func):
     return real_integral + 1j*imag_integral
 
 a = 1
-m = 1
+m = 100
 phi_m = -2
-t_flight1 = 10
+t_flight1 = 1
 
 #Apply measurment, delocalized state
 E=1/(2*m*a**2)
@@ -51,7 +51,7 @@ def FT(x, k_values):
             L = np.exp(-a_coeff*x**2-b_coeff*x-c_coeff)
             R = np.exp(-a_coeff*x**2+b_coeff*x-c_coeff)
             initial_state = L + R
-            return initial_state*np.exp(-1j*k*x)
+            return initial_state*np.exp(1j*k*x)
 
         ft_k = complex_quadrature(integrand, -np.inf, np.inf)
         ft.append(ft_k)
@@ -59,51 +59,47 @@ def FT(x, k_values):
 
 def IFT_evo(ftrans, k, x_values, t):
 
+    #dispersion relation
+    #omega = -k**2/(2*m)
+    #omega = -np.sqrt(k**2 + m**2)
+
     #q-metric dispersion relation
     dim = 4
     L_0 = 1
-    omega_t_int = []
-    for momentum in k:
-        def omega_t_integrand(gl):
-            xi = (L_0/gl)**2
-            T_squared = 1 + xi
-            T_sq_inv = 1/T_squared
-            g = -dim*T_sq_inv*(L_0**2/gl**3)
-            #ADDED A MINUS IT DOESN'T WORK OTHERWISE :'(
-            omega_t_integrand = -(T_sq_inv*momentum**2 + (1-T_squared)*m**2 - 1j*m*T_squared*g)/(T_squared*(g - 2*1j*m))
-            #omega_t_integrand = 1j*(momentum**2/(2*m))
-            return omega_t_integrand
-        omega_t_integrated = complex_quadrature(omega_t_integrand, 0.01, t)
-        omega_t_int.append(omega_t_integrated)
+    gl = t
+    xi = (L_0/gl)**2
+    T_squared = 1 + xi
+    g = (((dim-1)/gl)*(1-T_squared**(-2))-dim*T_squared**(-1)*(L_0**2/gl**3))
+    omega = 0.5*(1j*g - np.sqrt(-g**2 + 4*T_squared**(-1)*(T_squared**(-1)*k**2 + m**2)))
+
+    #low k approximation
+    #omega = -((T_squared**(-2))/np.sqrt(-g**2 + 4*T_squared**(-1)*m**2))*k**2
 
     ift = []
     for x in x_values:
 
-        integrand = ftrans*np.exp(1j*k*x-omega_t_int)
+        integrand = ftrans*np.exp(-1j*(k*x-omega*t))
 
         ift_x = complex_trapz(integrand)
         ift.append(ift_x)
     return ift
 
-samples = 1000
+samples = 10000
 #extent of integration and plotting, enlarge if ripple effects due to boundaries arise
-k_extent = 40
-x_extent = 10
-x = np.linspace(-x_extent, x_extent, samples)
-k = np.linspace(-k_extent, k_extent, samples)
+extent = 100
+x = np.linspace(-extent, extent, samples)
+k = np.linspace(-extent, extent, samples)
 
 psi_k = FT(x, k)
 fig1, ax1 = plt.subplots()
 ax1.plot(k, np.abs(psi_k))
-ax1.set_title('Momentum space')
-ax1.set_xlabel('k')
-ax1.set_ylabel('$\psi (k)$')
-
 
 fig2, ax2 = plt.subplots()
 
+#t_flight2 = 5.1
+#for t in np.linspace(0.1, t_flight2, 6):
 t_flight2 = 1.5
-for t in np.linspace(0.01, t_flight2, 5):
+for t in np.linspace(0.1, t_flight2, 5):
     psi_xt = IFT_evo(psi_k, k, x, t)
 
     norm = np.sqrt(np.trapz(np.abs(psi_xt)**2))
@@ -112,10 +108,7 @@ for t in np.linspace(0.01, t_flight2, 5):
 
     ax2.plot(x, np.abs(psi_xt)/norm, label='time={}'.format(t))
 
-ax2.set_title('Position space')
-ax2.set_xlabel('x')
-ax2.set_ylabel('$\psi (x, t)$')
-ax2.legend()
+plt.legend()
 
 time_elapsed = (time.perf_counter() - time_start)
 print ("checkpoint %5.1f secs" % (time_elapsed))

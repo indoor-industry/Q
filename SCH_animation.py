@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import quad
 import time
+from celluloid import Camera
 
 time_start = time.perf_counter()
 
@@ -67,25 +68,6 @@ def IFT_evo(ftrans, k, x_values, t):
     elif DR == 'KG':
         omega = np.sqrt(k**2 + m**2)
 
-    #q-metric dispersion relation
-    elif DR == 'Q':
-        dim = 4
-        L_0 = 1
-        gl = t
-        xi = (L_0/gl)**2
-        T_squared = 1 + xi
-        g = -dim*T_squared**(-1)*(L_0**2/gl**3)
-        omega = 0.5*(-1j*g + np.emath.sqrt(-g**2 + 4*T_squared**(-1)*(T_squared**(-1)*k**2 + m**2)))
-
-    elif DR == 'SCHQ':
-        dim = 4
-        L_0 = 1
-        gl = t
-        xi = (L_0/gl)**2
-        T_squared = 1 + xi
-        g = -dim*T_squared**(-1)*(L_0**2/gl**3)
-        omega = 0.5*(-1j*g + np.emath.sqrt(-g**2+4*T_squared**(-1)*m**2)) + (T_squared**(-2)/(np.emath.sqrt(-g**2+4*T_squared**(-1)*m**2)))*k**2
-
     ift = []
     for x in x_values:
 
@@ -110,25 +92,15 @@ IS = [integrand(pos) for pos in x]
 #Compute FT
 psi_k = FT(x, k)
 
-#Define plot, plot FT
-fig1, ax1 = plt.subplots(1,2)
+#Define plot
 fig2, ax2 = plt.subplots()
-
-ax1[0].plot(x, np.abs(IS))
-ax1[0].set_title('Position space')
-ax1[0].set_xlabel('x')
-ax1[0].set_ylabel('$\psi (x)$')
-
-ax1[1].plot(k, np.abs(psi_k))
-ax1[1].set_title('Momentum space')
-ax1[1].set_xlabel('k')
-ax1[1].set_ylabel('$\psi (k)$')
+camera = Camera(fig2)
 
 #Time of flight after delocalization
 t_flight2 = 1.5
 #Compute the wavefunction evolved for different times
 eps = 0.001
-for t in np.linspace(0+eps, t_flight2, 5):
+for t in np.linspace(0+eps, t_flight2, 200):
     psi_xt = IFT_evo(psi_k, k, x, t)
 
     #Compute norm of wavefunction to be used for normalization below
@@ -136,15 +108,16 @@ for t in np.linspace(0+eps, t_flight2, 5):
 
     print(norm)
 
-    ax2.plot(x, np.abs(psi_xt)/norm, label='time=%.2f'%t)
+    plot = ax2.plot(x, np.abs(psi_xt)/norm, color = 'black')
+    ax2.legend(plot, [f'time = {t:.2f}'])
+    ax2.set_title('Position space')
+    ax2.set_xlabel('x')
+    ax2.set_ylabel('$\psi (x, t)$')
+    ax2.set_xlim([-2*d, 2*d])
+    camera.snap()
 
-ax2.set_title('Position space')
-ax2.set_xlabel('x')
-ax2.set_ylabel('$\psi (x, t)$')
-ax2.legend()
-ax2.set_xlim([-2*d, 2*d])
+animation = camera.animate(interval = 2)
+animation.save('plots/SCH_evo.gif')
 
 time_elapsed = (time.perf_counter() - time_start)
 print ("checkpoint %5.1f secs" % (time_elapsed))
-
-plt.show()

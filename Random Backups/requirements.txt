@@ -4,4 +4,3 @@ einsteinpy
 sympy
 PyQt5
 scipy
-celluloid
