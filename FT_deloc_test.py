@@ -78,16 +78,6 @@ def IFT_evo(ftrans, k, x_values, t):
     elif DR == 'KG':
         omega = np.sqrt(k**2 + m**2)
 
-    #q-metric dispersion relation
-    elif DR == 'Q':
-        dim = 4
-        L_0 = 1
-        gl = t
-        xi = (L_0/gl)**2
-        T_squared = 1 + xi
-        g = -dim*T_squared**(-1)*(L_0**2/gl**3)
-        omega = 0.5*(-1j*g + np.emath.sqrt(-g**2 + 4*T_squared**(-1)*(T_squared**(-1)*k**2 + m**2)))
-
     ift = []
     for x in x_values:
 

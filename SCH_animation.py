@@ -97,7 +97,7 @@ fig2, ax2 = plt.subplots()
 camera = Camera(fig2)
 
 #Time of flight after delocalization
-t_flight2 = 1.5
+t_flight2 = 5
 #Compute the wavefunction evolved for different times
 eps = 0.001
 for t in np.linspace(0+eps, t_flight2, 200):

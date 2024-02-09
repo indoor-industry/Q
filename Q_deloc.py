@@ -102,7 +102,7 @@ ax1.set_ylabel('$\psi (k)$')
 
 fig2, ax2 = plt.subplots()
 
-t_flight2 = 1.5
+t_flight2 = 3
 for t in np.linspace(0.01, t_flight2, 5):
     psi_xt = IFT_evo(psi_k, k, x, t)
 

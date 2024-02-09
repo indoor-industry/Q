@@ -23,7 +23,7 @@ def complex_trapz(func):
     return real_integral + 1j*imag_integral
 
 a = 1
-m = 100
+m = 1
 
 def FT(x, k_values):
     ft = []
@@ -46,22 +46,25 @@ def IFT_evo(ftrans, k, x_values, t_flight1):
         def omega_t_integrand(gl):
             xi = (L_0/gl)**2
             T_squared = 1 + xi
-            g = (((dim-1)/gl)*(1-T_squared**(-2))-dim*T_squared**(-1)*(L_0**2/gl**3))
-            omega_t_integrand = 0.5*(1j*g - np.emath.sqrt(-g**2 + 4*T_squared**(-1)*(T_squared**(-1)*momentum**2 + m**2)))
+            T_sq_inv = 1/T_squared
+            g = -dim*T_sq_inv*(L_0**2/gl**3)
+            #ADDED A MINUS IT DOESN'T WORK OTHERWISE :'(
+            omega_t_integrand = -(T_sq_inv*momentum**2 + (1-T_squared)*m**2 - 1j*m*T_squared*g)/(T_squared*(g - 2*1j*m))
+            #omega_t_integrand = 1j*(momentum**2/(2*m))
             return omega_t_integrand
-        omega_t_integrated = complex_quadrature(omega_t_integrand, 0.1, t)
+        omega_t_integrated = complex_quadrature(omega_t_integrand, 0.01, t)
         omega_t_int.append(omega_t_integrated)
 
     ift = []
     for x in x_values:
 
-        integrand = ftrans*np.exp(-1j*(k*x-omega_t_int))
+        integrand = ftrans*np.exp(1j*k*x-omega_t_int)
 
         ift_x = complex_trapz(integrand)
         ift.append(ift_x)
     return ift
 
-samples = 10000
+samples = 1000
 extent = 10
 x = np.linspace(-extent, extent, samples)
 k = np.linspace(-extent, extent, samples)
@@ -70,7 +73,7 @@ psi_k = FT(x, k)
 plt.plot(k, np.abs(psi_k))
 plt.show()
 
-t_flight = 200
+t_flight = 10
 for t in np.linspace(0.1, t_flight, 5):
     psi_xt = IFT_evo(psi_k, k, x, t)
 

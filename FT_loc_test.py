@@ -38,17 +38,8 @@ def FT(x, k_values):
 def IFT_evo(ftrans, k, x_values, t_flight1):
 
     #dispersion relation
-    #omega = k**2/(2*m)
+    omega = k**2/(2*m)
     #omega = np.sqrt(k**2 + m**2)
-
-    #q-metric dispersion relation
-    dim = 4
-    L_0 = 1
-    gl = t
-    xi = (L_0/gl)**2
-    T_squared = 1 + xi
-    g = (((dim-1)/gl)*(1-T_squared**(-2))-dim*T_squared**(-1)*(L_0**2/gl**3))    
-    omega = 0.5*(1j*g - np.emath.sqrt(-g**2 + 4*T_squared**(-1)*(T_squared**(-1)*k**2 + m**2)))
 
     ift = []
     for x in x_values:

@@ -67,25 +67,6 @@ def IFT_evo(ftrans, k, x_values, t):
     elif DR == 'KG':
         omega = np.sqrt(k**2 + m**2)
 
-    #q-metric dispersion relation
-    elif DR == 'Q':
-        dim = 4
-        L_0 = 1
-        gl = t
-        xi = (L_0/gl)**2
-        T_squared = 1 + xi
-        g = -dim*T_squared**(-1)*(L_0**2/gl**3)
-        omega = 0.5*(-1j*g + np.emath.sqrt(-g**2 + 4*T_squared**(-1)*(T_squared**(-1)*k**2 + m**2)))
-
-    elif DR == 'SCHQ':
-        dim = 4
-        L_0 = 1
-        gl = t
-        xi = (L_0/gl)**2
-        T_squared = 1 + xi
-        g = -dim*T_squared**(-1)*(L_0**2/gl**3)
-        omega = 0.5*(-1j*g + np.emath.sqrt(-g**2+4*T_squared**(-1)*m**2)) + (T_squared**(-2)/(np.emath.sqrt(-g**2+4*T_squared**(-1)*m**2)))*k**2
-
     ift = []
     for x in x_values:
 
@@ -125,7 +106,7 @@ ax1[1].set_xlabel('k')
 ax1[1].set_ylabel('$\psi (k)$')
 
 #Time of flight after delocalization
-t_flight2 = 1.5
+t_flight2 = 3
 #Compute the wavefunction evolved for different times
 eps = 0.001
 for t in np.linspace(0+eps, t_flight2, 5):
